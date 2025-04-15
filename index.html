@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tramites buscador</title>
+</head>
+<body>
+
+    <style>
+        /* Contenedor principal */
+        .filtro-container {
+            max-width: 1000px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+        }
+        
+        /* Estilo del título */
+        .filtro-container h1 {
+            text-align: center;
+            color: #2a5db0;
+        }
+        
+        /* Estilos del formulario */
+        .filtro-form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .filtro-form select,
+        .filtro-form input {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        /* Botones */
+        .filtro-form button {
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        
+        .boton-buscar {
+            background-color: #2a5db0;
+            color: white;
+        }
+        
+        .boton-limpiar {
+            background-color: white;
+            color: #2a5db0;
+            border: 1px solid #2a5db0;
+        }
+        
+        .boton-buscar:hover {
+            background-color: #1e4a8d;
+        }
+        
+        .boton-limpiar:hover {
+            background-color: #ddd;
+        }
+        
+        /* Resultados */
+        .resultados {
+            margin-top: 15px;
+        }
+        
+        .resultados a {
+            display: block;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-decoration: none;
+            color: #2a5db0;
+            transition: background 0.3s;
+        }
+        
+        .resultados a:hover {
+            background: #f1f1f1;
+        }
+        </style>
+        
+        <div class="filtro-container">
+            <h1>Trámites y servicios</h1>
+            <form class="filtro-form">
+                <select id="categoria">
+                    <option value="">Escoger categoría</option>
+                    <option value="dadp">DEPARTAMENTO ADMINISTRATIVO DE PLANEACION</option>
+                    <option value="juridico">OFICINA JURIDICA</option>
+                    <option value="turismo">SECRETARIA DE CULTURA Y TURISMO</option>
+                    <option value="educacion">SECRETARIA DE EDUCACIÓN</option>
+                    <option value="gobierno">SECRETARIA DE GOBIERNO</option>
+                    <option value="hacienda">SECRETARIA DE HACIENDA</option>
+                    <option value="desarrollo">SECRETARIA DE DESARROLLO SOCIAL</option>
+                    <option value="salud">SECRETARIA DE SALUD</option>
+                    <option value="transito">SECRETARIA DE TRANSITO Y TRANSPORTE</option>
+                    <option value="vivienda">SECRETARIA DE VIVIENDA</option>
+                    <option value="sisben">SISBEN</option>
+                    <option value="valorizacion">VALORIZACIÓN Y PLUSVALIA</option>
+                    <option value="otros">OTROS</option>
+                </select>
+                <input type="text" id="buscar" placeholder="Filtrar por palabras en el título">
+                <button type="button" class="boton-buscar" onclick="filtrarTramites()">BUSCAR</button>
+                <button type="button" class="boton-limpiar" onclick="limpiarFiltro()">LIMPIAR</button>
+            </form>
+        
+            <div class="resultados" id="resultados">
+                <!-- Resultados aparecerán aquí -->
+            </div>
+        </div>
+        
+        <script>
+        const tramites = [
+            { nombre: "Traslado de cadáveres", categoria: "gobierno", url: "https://www.gov.co/ficha-tramites-y-servicios/T33627" },
+            { nombre: "Prórroga de sorteo de rifas", categoria: "gobierno", url: "https://www.gov.co/ficha-tramites-y-servicios/T33569" },
+            { nombre: "Registro de ejemplares caninos de manejo especial", categoria: "salud", url: "https://www.gov.co/ficha-tramites-y-servicios/T33898" },
+            { nombre: "Registro de contribuyentes del impuesto de industria y comercio", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Registro de actividades relacionadas con la enajenación de inmuebles destinados a vivienda", categoria: "vivienda", url: "https://www.gov.co/ficha-tramites-y-servicios/T27805" },
+            { nombre: "Reconocimiento de personería jurídica de los organismos de acción comunal de primero y segundo grado", categoria: "juridico", url: "https://www.gov.co/ficha-tramites-y-servicios/T27805" },
+            { nombre: "Reconocimiento de escenarios habilitados para la realización de espectáculos públicos de las artes escénicas", categoria: "espectaculos", url: "https://www.gov.co/ficha-tramites-y-servicios/T27811" },
+            { nombre: "Permiso para demostraciones públicas de pólvora, artículos pirotécnicos o fuegos artificiales", categoria: "gobierno", url: "https://www.gov.co/ficha-tramites-y-servicios/T34113" },
+            { nombre: "Permiso de captación de recursos", categoria: "permisos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33561" },
+            { nombre: "Pensión de jubilación para docentes oficiales", categoria: "educacion", url: "https://www.gov.co/ficha-tramites-y-servicios/T33561" },
+            { nombre: "Participación en plusvalía", categoria: "juridico", url: "https://www.gov.co/ficha-tramites-y-servicios/T33564" },
+            { nombre: "Inscripción de la propiedad horizontal", categoria: "vivienda", url: "https://www.gov.co/ficha-tramites-y-servicios/T33554" },
+            { nombre: "Inclusión de personas en la base de datos del sistema de identificación y clasificación de potenciales beneficiarios de programas sociales – SISBEN", categoria: "sisben", url: "https://www.gov.co/ficha-tramites-y-servicios/T9825" },
+            { nombre: "Impuesto de espectáculos públicos", categoria: "hacienda", url: "https://concejocucuta.gov.co/wp-content/uploads/2022/08/ACUERDO-029.pdf" },
+            { nombre: "Impuesto de delineación urbana", categoria: "vivienda", url: "https://www.gov.co/ficha-tramites-y-servicios/T28681" },
+            { nombre: "Formulación y radicación del proyecto del plan parcial", categoria: "vivienda", url: "https://www.gov.co/ficha-tramites-y-servicios/T33652" },
+            { nombre: "Facilidades de pago para los deudores de obligaciones tributarias", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33369" },
+            { nombre: "Facilidades de pago para los deudores de obligaciones no tributarias", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33669" },
+            { nombre: "Exención del impuesto predial unificado", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Exención del impuesto de industria y comercio", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33547" },
+            { nombre: "Exención del impuesto de espectáculos públicos", categoria: "espectaculos", url: "https://www.gov.co/ficha-tramites-y-servicios/T28575" },
+            { nombre: "Esterilización canina y felina", categoria: "gobierno", url: "https://www.gov.co/ficha-tramites-y-servicios/T33897" },
+            { nombre: "Duplicado de la licencia de tránsito de un vehículo automotor", categoria: "transito", url: "https://www.gov.co/ficha-tramites-y-servicios/T33626" },
+            { nombre: "Derechos de explotación de juegos de suerte y azar en la modalidad de rifas", categoria: "sorteos", url: "https://www.gov.co/ficha-tramites-y-servicios/T39047" },
+            { nombre: "Corrección de errores e inconsistencias en declaraciones y recibos de pago", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33348" },
+            { nombre: "Concepto de norma urbanística", categoria: "dadp", url: "https://cucuta.gov.co/sipot/" },
+            { nombre: "Clausura de un establecimiento educativo", categoria: "educacion", url: "https://www.gov.co/ficha-tramites-y-servicios/T33651" },
+            { nombre: "Certificado de riesgo de predios", categoria: "dadp", url: "https://www.gov.co/ficha-tramites-y-servicios/T27761" },
+            { nombre: "Certificado de libertad y tradición de un vehículo automotor", categoria: "certificados", url: "https://www.gov.co/ficha-tramites-y-servicios/T14134" },
+            { nombre: "Certificado de estratificación socioeconómica", categoria: "vivienda", url: "http://tramitesplaneacion.cucuta.gov.co/pagina/" },
+            { nombre: "Certificación de la personería jurídica y representación legal de las organizaciones comunales de primero y segundo grado", categoria: "juridico", url: "https://www.gov.co/ficha-tramites-y-servicios/T33647" },
+            { nombre: "Certificación de la personería jurídica y representación legal de las organizaciones comunales de primero y segundo grado", categoria: "juridico", url: "https://www.gov.co/ficha-tramites-y-servicios/T33928" },
+            { nombre: "Autorización de ocupación de inmuebles", categoria: "vivienda", url: "https://www.gov.co/ficha-tramites-y-servicios/T33560" },
+            { nombre: "ASISTENCIA TÉCNICA RURAL", categoria: "rural", url: "https://www.gov.co/ficha-tramites-y-servicios/T33919" },
+            { nombre: "Certificado de Residencia", categoria: "certificado", url: "https://www.gov.co/ficha-tramites-y-servicios/T33533" },
+            { nombre: "Autorización para la operación de juegos de suerte y azar en la modalidad de promocionales", categoria: "sorteos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33533" },
+            { nombre: "Impuesto de industria y comercio y su complementario de avisos y tableros", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T30791" },
+            { nombre: "Modificación en el registro de contribuyentes del impuesto de industria y comercio", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33332" },
+            { nombre: "Impuesto predial unificado", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T9262" },
+            { nombre: "Impuesto sobre casinos y juegos permitidos", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T28606" },
+            { nombre: "Permiso para espectáculos públicos diferentes a las artes escénicas", categoria: "espectaculos", url: "https://www.gov.co/ficha-tramites-y-servicios/T27940" },
+            { nombre: "Sobretasa municipal o distrital a la gasolina motor", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T27940" },
+            { nombre: "Licencia de funcionamiento para las instituciones promovidas por particulares que ofrezcan el servicio educativo para el trabajo y el desarrollo humano", categoria: "educacion", url: "https://www.gov.co/ficha-tramites-y-servicios/T33600" },
+            { nombre: "Cancelación del registro de contribuyentes del impuesto de industria y comercio", categoria: "tributos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33632" },
+            { nombre: "Autorización para la operación de juegos de suerte y azar en la modalidad de rifas", categoria: "sorteos", url: "https://www.gov.co/ficha-tramites-y-servicios/T28536" },
+            { nombre: "Encuesta del sistema de identificación y clasificación de potenciales beneficiarios de programas sociales – SISBEN", categoria: "sisben", url: "https://www.gov.co/ficha-tramites-y-servicios/T10121" },
+            { nombre: "Retiro de personas de la base de datos del sistema de identificación y clasificación de potenciales beneficiarios de programas sociales – SISBEN", categoria: "sisben", url: "https://www.gov.co/ficha-tramites-y-servicios/T10623" },
+            { nombre: "Cambio de propietario de un establecimiento educativo", categoria: "educacion", url: "https://www.gov.co/ficha-tramites-y-servicios/T33659" },
+            { nombre: "Vacunación antirrábica de caninos y felinos", categoria: "salud", url: "https://www.gov.co/ficha-tramites-y-servicios/T33659" },
+            { nombre: "Traspaso de propiedad de un vehículo automotor", categoria: "transito", url: "https://www.gov.co/ficha-tramites-y-servicios/T33625" },
+            { nombre: "Inscripción de dignatarios de las organizaciones comunales de primero y segundo grado", categoria: "vivienda", url: "https://www.gov.co/ficha-tramites-y-servicios/T27814" },
+            { nombre: "Concepto de excepción de juegos de suerte y azar en la modalidad de rifas", categoria: "sorteos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33648" },
+            { nombre: "Registro de extinción de la propiedad horizontal", categoria: "vivienda", url: "https://www.gov.co/ficha-tramites-y-servicios/T33558" },
+            { nombre: "Devolución de elementos retenidos por ocupación ilegal del espacio público", categoria: "espacio", url: "https://www.gov.co/ficha-tramites-y-servicios/T33602" },
+            { nombre: "Inscripción o reforma de estatutos de las organizaciones comunales de primero y segundo grado", categoria: "juridico", url: "https://www.gov.co/ficha-tramites-y-servicios/T27803" },
+            { nombre: "Ascenso o reubicación de nivel salarial en el escalafón docente oficial", categoria: "educacion", url: "https://www.gov.co/ficha-tramites-y-servicios/T33597" },
+            { nombre: "Apertura y registro de libros de las organizaciones comunales de primero y segundo grado", categoria: "juridico", url: "https://www.gov.co/ficha-tramites-y-servicios/T27802" },
+            { nombre: "Concepto sanitario", categoria: "salud", url: "https://cucuta.gov.co/tramite-concepto-uso-sanitario/" },
+            { nombre: "Contribución por valorización", categoria: "impuestos", url: "https://www.gov.co/ficha-tramites-y-servicios/T33362" },
+            { nombre: "Auxilio funerario Docentes", categoria: "educacion", url: "" },
+            { nombre: "Registro de firmas de rectores, directores y secretario(a)s de establecimientos educativos", categoria: "educacion", url: "https://sac2.gestionsecretariasdeeducacion.gov.co/app_Login/?sec=27" },
+            { nombre: "Inscripción de dignatarios de las organizaciones comunales de primero y segundo grado", categoria: "desarrollo", url: "#" },
+            { nombre: "Reconocimiento de personería jurídica de los organismos de acción comunal de primero y segundo grado", categoria: "desarrollo", url: "https://sgd.cucuta.gov.co/ventanillaunica/ven_sec_Login/" },
+            { nombre: "Cancelación de la personería jurídica de las organizaciones comunales de primero y segundo grado", categoria: "desarrollo", url: "https://sgd.cucuta.gov.co/ventanillaunica/ven_sec_Login/" },
+            { nombre: "Apertura y registro de libros de las organizaciones comunales de primero y segundo grado", categoria: "desarrollo", url: "https://sgd.cucuta.gov.co/ventanillaunica/ven_sec_Login/" },
+            { nombre: "Inscripción o reforma de estatutos de las organizaciones comunales de primero y segundo grado", categoria: "desarrollo", url: "https://sgd.cucuta.gov.co/ventanillaunica/ven_sec_Login/" },
+            { nombre: "Certificación de la personería jurídica y representación legal de las organizaciones comunales de primero y segundo grado", categoria: "desarrollo", url: "https://sgd.cucuta.gov.co/ventanillaunica/ven_sec_Login/" },
+            { nombre: "Reconocimiento de escenarios habilitados para la realización de espectáculos públicos de las artes escénicas", categoria: "turismo", url: "#" },
+            { nombre: "Permiso para demostraciones públicas de pólvora, artículos pirotécnicos o fuegos artificiales", categoria: "turismo", url: "#" },
+            { nombre: "Permiso para espectáculos públicos de las artes escénicas en escenarios no habilitados", categoria: "turismo", url: "#" },
+            { nombre: "Licencia de funcionamiento de instituciones educativas que ofrezcan programas de educación formal de adultos", categoria: "educacion", url: "https://sac2.gestionsecretariasdeeducacion.gov.co/app_Login/?sec=27" },
+            { nombre: "Licencia de funcionamiento para establecimientos educativos promovidos por particulares para prestar el servicio público educativo en los niveles de preescolar, básica y media", categoria: "educacion", url: "https://semcucuta.gov.co/legalizacion-y-novedad-de-instituciones-educativas-oficiales-y-privadas/" },
+            { nombre: "Licencia de funcionamiento para las instituciones promovidas por particulares que ofrezcan el servicio educativo para el trabajo y el desarrollo humano", categoria: "educacion", url: "https://semcucuta.gov.co/legalizacion-y-novedad-de-instituciones-educativas-oficiales-y-privadas/" },
+            { nombre: "Cambio de propietario de un establecimiento educativo", categoria: "educacion", url: "https://semcucuta.gov.co/wp-content/uploads/2015/09/Novedades-EE-de-EPBM-y-ETDH.pdf" },
+            { nombre: "Certificado de residencia", categoria: "gobierno", url: "http://200.116.213.140/pagina/secretaria-planeacion/" },
+            { nombre: "Exención del impuesto de espectáculos públicos", categoria: "hacienda", url: "https://drive.google.com/file/d/1PsW7kLITwJLc6qvsrThgHwnMSeB0B6hi/view" },
+            { nombre: "Devolución y/o compensación de pagos en exceso y pagos de lo no debido", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Impuesto al degüello de ganado menor", categoria: "hacienda", url: "https://drive.google.com/file/d/1PsW7kLITwJLc6qvsrThgHwnMSeB0B6hi/view-" },
+            { nombre: "Cancelación del registro de contribuyentes del impuesto de industria y comercio", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Sobretasa municipal a la gasolina motor", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Registro de contribuyentes del impuesto de industria y comercio", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Facilidades de pago para los deudores de obligaciones tributarias", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Exención del impuesto de industria y comercio", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Facilidades de pago para los deudores de obligaciones no tributarias", categoria: "hacienda", url: "https://drive.google.com/file/d/1mLqCxaMsIz1lsCsbBX7uI9YAK9IWP7rY/view" },
+            { nombre: "Supervisión delegado de sorteos y concursos", categoria: "otros", url: "https://asambleanortedesantander.micolombiadigital.gov.co/sites/asambleanortedesantander/content/files/000042/2067_ordenanza-n-010.pdf" },
+            { nombre: "Concepto uso de suelos", categoria: "dadp", url: "https://cucuta.gov.co/consulta-uso-de-suelos/" },
+            { nombre: "Certificado de riesgo", categoria: "dadp", url: "http://tramitesplaneacion.cucuta.gov.co/pagina/certificado-de-riesgo-de-predios/" },
+            { nombre: "Impuesto de delineación urbana", categoria: "dadp", url: "https://sgd.cucuta.gov.co/ventanillaunica/ven_sec_Login/" },
+            { nombre: "Cancelación de la matrícula de arrendadores", categoria: "vivienda", url: "https://cucuta.gov.co/quienes-somos-vivienda/" },
+            { nombre: "Inscripción de la propiedad horizontal", categoria: "vivienda", url: "https://cucuta.gov.co/quienes-somos-vivienda/" },
+            { nombre: "Matrícula de arrendadores", categoria: "vivienda", url: "https://cucuta.gov.co/quienes-somos-vivienda/" }
+
+        ];
+        
+        function filtrarTramites() {
+            const categoria = document.getElementById("categoria").value.toLowerCase();
+            const busqueda = document.getElementById("buscar").value.toLowerCase();
+            const resultadosDiv = document.getElementById("resultados");
+        
+            // Filtrar trámites
+            const resultados = tramites.filter(tramite =>
+                (categoria === "" || tramite.categoria === categoria) &&
+                (busqueda === "" || tramite.nombre.toLowerCase().includes(busqueda))
+            );
+        
+            // Mostrar resultados con enlaces
+            resultadosDiv.innerHTML = resultados.length
+                ? resultados.map(tramite => `<a href="${tramite.url}" target="_blank">${tramite.nombre}</a>`).join("")
+                : "<p>No se encontraron resultados</p>";
+        }
+        
+        function limpiarFiltro() {
+            document.getElementById("categoria").value = "";
+            document.getElementById("buscar").value = "";
+            document.getElementById("resultados").innerHTML = "";
+        }
+        </script>
+        
+    
+</body>
+</html>
